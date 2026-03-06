@@ -54,7 +54,7 @@ class GameLevelSpace {
             src: path + "/images/gamify/chillguy.png",
             SCALE_FACTOR: 8,
             ANIMATION_RATE: 50,
-            INIT_POSITION: { x: 500, y: 300 },
+            INIT_POSITION: { x: 0, y: 50 },
             pixels: { height: 512, width: 384 },
             orientation: { rows: 4, columns: 3 },
             down: { row: 0, start: 0, columns: 3 },
@@ -113,4 +113,4 @@ this.classes = [      { class: GameEnvBackground, data: bgData },
     }
 }
 
-export default GameLevelSpacelevel3;
+export default GameLevelSpace;

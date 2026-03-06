@@ -1,7 +1,7 @@
 ---
 layout: opencs
-title: RPG Space Example 
-permalink: /gamify/space
+title: RPG Water Example 
+permalink: /gamify/water
 ---
 
 <div id="gameContainer">
@@ -13,10 +13,10 @@ permalink: /gamify/space
     // Adnventure Game assets locations
     import Core from "{{site.baseurl}}/assets/js/GameEnginev1/essentials/Game.js";
     import GameControl from "{{site.baseurl}}/assets/js/GameEnginev1/essentials/GameControl.js";
-    import GameLevelSpace from "{{site.baseurl}}/assets/js/GameEnginev1/GameLevelSpace3.js";
+    import GameLevelWater from "{{site.baseurl}}/assets/js/GameEnginev1/GameLevelWater.js";
     import { pythonURI, javaURI, fetchOptions } from '{{site.baseurl}}/assets/js/api/config.js';
 
-    const gameLevelClasses = [GameLevelSpace];
+    const gameLevelClasses = [GameLevelWater];
 
     // Web Server Environment data
     const environment = {
