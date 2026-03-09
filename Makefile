@@ -13,7 +13,7 @@ default: serve-current
 	@touch /tmp/.notebook_watch_marker
 	@make watch-notebooks &
 	@make watch-files &
-	@echo "Server running in background on http://localhost:$(PORT)"
+	@echo "Server running in background on http://localhost:$(PORT)/teamportfolio/"
 	@echo "  View logs: tail -f $(LOG_FILE)"
 	@echo "  Stop: make stop"
 
