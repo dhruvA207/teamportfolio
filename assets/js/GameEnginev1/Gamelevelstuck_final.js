@@ -10,7 +10,7 @@
 // 3) Ensure images exist and paths resolve via 'path' provided by the engine.
 // 4) You can add more objects to this.classes inside the constructor.
 /**
- * @file GameLevelAlienPlanet.js
+ * @file GameLevelstuck_final.js
  * @description FA2 Update (v3) — Interaction, Behavior Design + Chase AI
  *
  *   This level extends FA1/FA2 with a chase AI behavior on the Alien NPC:
@@ -31,7 +31,7 @@
  *                 (speed scales with distance). Chase pauses on game-over and
  *                 resets to INIT_POSITION on E-key restart.
  *
- * @level       AlienPlanet
+ * @level       stuck_final
  * @version     4.0 (FA2 + Chase + Survive Timer)
  * @author      Team Member
  * @module      GameBuilder
@@ -500,7 +500,7 @@ const SurvivalManager = {
 
 // =============================================================================
 /**
- * @class GameLevelAlienPlanet
+ * @class GameLevelstuck_final
  * @classdesc FA2 v3 — Alien Planet with collision scoring + chase AI.
  *
  * Interaction Design Summary:
@@ -520,7 +520,7 @@ const SurvivalManager = {
  *   Chase pauses on game-over; alien teleports back to spawn on E-key reset.
  */
 // =============================================================================
-class GameLevelAlienPlanet {
+class GameLevelstuck_final {
 
     /**
      * @constructor
@@ -766,4 +766,4 @@ class GameLevelAlienPlanet {
     }
 }
 
-export const gameLevelClasses = [GameLevelAlienPlanet];
+export default GameLevelstuck_final;
