@@ -15,11 +15,11 @@
 #   results) and in your feed.xml site description.
 
 title: Open Coding 
-description: "Class of 2026"
-owner_name: John Mortensen
-github_username: jm1021 
-github_repo: "portfolio" 
-baseurl: "/portfolio" 
+description: "Team Bob"
+owner_name: Dhruv Agrawal
+github_username: dhruvA207 
+github_repo: "teamportfolio" 
+baseurl: "/teamportfolio" 
 future: true
 
 # Build settings
