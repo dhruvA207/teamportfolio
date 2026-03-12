@@ -56,7 +56,7 @@ class GameLevelSpace {
             src: path + "/images/gamify/chillguy.png",
             SCALE_FACTOR: 8,
             ANIMATION_RATE: 50,
-            INIT_POSITION: { x: 0, y: 50 },
+            INIT_POSITION: { x: 800, y: 50 },
             pixels: { height: 512, width: 384 },
             orientation: { rows: 4, columns: 3 },
             down: { row: 0, start: 0, columns: 3 },
@@ -75,14 +75,9 @@ class GameLevelSpace {
                 if (this.dialogueSystem) { 
                     this.showRandomDialogue(); 
                 }
-                // Trigger level transition after a brief delay to allow dialogue to display
-                if (this.gameEnv && this.gameEnv.gameControl && !this.gameEnv.gameLevelTransitionTriggered) {
-                    this.gameEnv.gameLevelTransitionTriggered = true;
-                    setTimeout(() => {
-                        if (this.gameEnv && this.gameEnv.gameControl && this.gameEnv.gameControl.currentLevel) {
-                            this.gameEnv.gameControl.currentLevel.continue = false;
-                        }
-                    }, 2000);
+                // Trigger level transition immediately (same effect as hitting ESC)
+                if (this.gameEnv && this.gameEnv.gameControl && this.gameEnv.gameControl.currentLevel) {
+                    this.gameEnv.gameControl.currentLevel.continue = false;
                 }
             }
         };
