@@ -64,6 +64,8 @@ function _glowBarrier(barrierInstance) {
 
 class GameLevel2 {
     constructor(gameEnv) {
+        this.gameEnv = gameEnv;
+        this.levelTransitionTriggered = false;
         const path   = gameEnv.path;
         const width  = gameEnv.innerWidth;
         const height = gameEnv.innerHeight;
@@ -156,6 +158,14 @@ class GameLevel2 {
                         ? Math.floor((Date.now() - GameLevel2._startTime) / 1000)
                         : null;
                     GameLevel2._showVictoryScreen(elapsed);
+                    // Trigger level transition after victory screen shows
+                    setTimeout(() => {
+                        if (this.gameEnv && this.gameEnv.gameControl && 
+                            !this.gameEnv.gameLevelTransitionTriggered) {
+                            this.gameEnv.gameLevelTransitionTriggered = true;
+                            this.gameEnv.gameControl.currentLevel.continue = false;
+                        }
+                    }, 4000);
                 }, 800);
             }
         };
@@ -388,6 +398,17 @@ class GameLevel2 {
         btn.addEventListener('mouseenter', () => { btn.style.background = '#b9f6ca'; });
         btn.addEventListener('mouseleave', () => { btn.style.background = '#69f0ae'; });
         btn.addEventListener('click', () => overlay.remove());
+    }
+
+    /**
+     * Initialize method called after level creation
+     * Sets up transition tracking on the gameEnv
+     */
+    initialize() {
+        if (this.gameEnv && this.gameEnv.gameControl) {
+            // Flag to track if transition has been triggered for this level
+            this.gameEnv.gameLevelTransitionTriggered = false;
+        }
     }
 }
 

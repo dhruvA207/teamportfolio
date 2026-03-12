@@ -465,6 +465,17 @@ const SurvivalManager = {
         AlienChaseAI.pause();
         const el = document.getElementById(INTERACTION_CONFIG.WIN_OVERLAY_ID);
         if (el) el.style.display = 'block';
+        
+        // Trigger level transition after a delay to allow player to see the win screen
+        if (this.gameEnv && this.gameEnv.gameControl && !this.gameLevelTransitionTriggered) {
+            this.gameLevelTransitionTriggered = true;
+            setTimeout(() => {
+                if (this.gameEnv && this.gameEnv.gameControl && 
+                    this.gameEnv.gameControl.currentLevel) {
+                    this.gameEnv.gameControl.currentLevel.continue = false;
+                }
+            }, 4000);
+        }
     },
 
     /**
@@ -530,7 +541,11 @@ class GameLevelstuck_final {
      * @param {number} gameEnv.innerHeight - Viewport/canvas height in pixels
      */
     constructor(gameEnv) {
+        this.gameEnv = gameEnv;
         const path = gameEnv.path;
+
+        // Store gameEnv reference in SurvivalManager for level transition
+        SurvivalManager.gameEnv = gameEnv;
 
         // Initialise HUD and overlay before any game object is created
         SurvivalManager.init();
@@ -763,6 +778,17 @@ class GameLevelstuck_final {
         ];
 
         
+    }
+
+    /**
+     * Initialize method called after level creation
+     * Sets up transition tracking on the SurvivalManager
+     */
+    initialize() {
+        if (SurvivalManager && SurvivalManager.gameEnv && SurvivalManager.gameEnv.gameControl) {
+            // Flag to track if transition has been triggered for this level
+            SurvivalManager.gameLevelTransitionTriggered = false;
+        }
     }
 }
 

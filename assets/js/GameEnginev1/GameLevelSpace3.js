@@ -17,6 +17,8 @@ import Barrier from './essentials/Barrier.js';
 
 class GameLevelSpace {
     constructor(gameEnv) {
+        this.gameEnv = gameEnv;
+        this.levelTransitionTriggered = false;
         const path = gameEnv.path;
         const width = gameEnv.innerWidth;
         const height = gameEnv.innerHeight;
@@ -66,36 +68,50 @@ class GameLevelSpace {
             upLeft: { row: Math.min(2, 4 - 1), start: 0, columns: 3 },
             downLeft: { row: 0, start: 0, columns: 3 },
             hitbox: { widthPercentage: 0.1, heightPercentage: 0.2 },
-            dialogues: ['Hi, I am a chill guy. Touch the moon but don\'t fly too high.'],
+            dialogues: ['Hi, I am a chill guy. Touch the moon but don\'t fly too high.', 'Good luck on your adventure!', 'Time to move to the next level!'],
             reaction: function() { if (this.dialogueSystem) { this.showReactionDialogue(); } else { console.log(this.greeting); } },
-            interact: function() { if (this.dialogueSystem) { this.showRandomDialogue(); } }
+            interact: function() { 
+                // Show dialogue if available
+                if (this.dialogueSystem) { 
+                    this.showRandomDialogue(); 
+                }
+                // Trigger level transition after a brief delay to allow dialogue to display
+                if (this.gameEnv && this.gameEnv.gameControl && !this.gameEnv.gameLevelTransitionTriggered) {
+                    this.gameEnv.gameLevelTransitionTriggered = true;
+                    setTimeout(() => {
+                        if (this.gameEnv && this.gameEnv.gameControl && this.gameEnv.gameControl.currentLevel) {
+                            this.gameEnv.gameControl.currentLevel.continue = false;
+                        }
+                    }, 2000);
+                }
+            }
         };
         const dbarrier_1 = {
-            id: 'dbarrier_1', x: 178, y: 134, width: 226, height: 26, visible: false,
+            id: 'dbarrier_1', x: 700, y: 100, width: 150, height: 20, visible: true,
             hitbox: { widthPercentage: 0.0, heightPercentage: 0.0 },
             fromOverlay: true
         };
 
         const dbarrier_2 = {
-            id: 'dbarrier_2', x: 361, y: 0, width: 41, height: 132, visible: false,
+            id: 'dbarrier_2', x: 800, y: 200, width: 50, height: 150, visible: true,
             hitbox: { widthPercentage: 0.0, heightPercentage: 0.0 },
             fromOverlay: true
         };
 
         const dbarrier_3 = {
-            id: 'dbarrier_3', x: 132, y: 141, width: 46, height: 112, visible: false,
+            id: 'dbarrier_3', x: 600, y: 300, width: 40, height: 100, visible: true,
             hitbox: { widthPercentage: 0.0, heightPercentage: 0.0 },
             fromOverlay: true
         };
 
         const dbarrier_4 = {
-            id: 'dbarrier_4', x: 4, y: 1, width: 50, height: 358, visible: false,
+            id: 'dbarrier_4', x: 300, y: 600, width: 400, height: 30, visible: true,
             hitbox: { widthPercentage: 0.0, heightPercentage: 0.0 },
             fromOverlay: true
         };
 
         const dbarrier_5 = {
-            id: 'dbarrier_5', x: 181, y: 217, width: 337, height: 44, visible: false,
+            id: 'dbarrier_5', x: 900, y: 400, width: 150, height: 30, visible: true,
             hitbox: { widthPercentage: 0.0, heightPercentage: 0.0 },
             fromOverlay: true
         };
@@ -109,7 +125,17 @@ this.classes = [      { class: GameEnvBackground, data: bgData },
       { class: Barrier, data: dbarrier_5 }
 ];
 
-        
+    }
+
+    /**
+     * Initialize method called after level creation
+     * Sets up transition tracking on the gameEnv
+     */
+    initialize() {
+        if (this.gameEnv && this.gameEnv.gameControl) {
+            // Flag to track if transition has been triggered for this level
+            this.gameEnv.gameLevelTransitionTriggered = false;
+        }
     }
 }
 
