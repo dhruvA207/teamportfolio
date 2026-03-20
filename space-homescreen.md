@@ -127,7 +127,7 @@ permalink: /space-hub
   <h1>Welcome to Space Adventure!</h1>
   <p>Embark on an epic journey through the cosmos. Choose your path:</p>
   
-  <a href="{{site.baseurl}}/notebooks/2026-03-18-space-blog/" class="button">Read the Space Blog</a>
+  <a href="{{site.baseurl}}/space-blog" class="button">Read the Space Blog</a>
   <a href="{{site.baseurl}}/gamify/space" class="button">Play the Space Game</a>
 </div>
 
