@@ -63,7 +63,7 @@ import Barrier from './essentials/Barrier.js';
  */
 // =============================================================================
 const INTERACTION_CONFIG = {
-    SURVIVE_MS:        10000,   // milliseconds the player must survive
+    SURVIVE_MS:        20000,   // milliseconds the player must survive
     HUD_ELEMENT_ID:    'alien-planet-hud',
     CAUGHT_OVERLAY_ID: 'alien-planet-caught',
     WIN_OVERLAY_ID:    'alien-planet-win',
@@ -287,7 +287,7 @@ const AlienChaseAI = {
 // =============================================================================
 /**
  * @namespace SurvivalManager
- * @description Manages the 10-second survival countdown, HUD timer display,
+ * @description Manages the 20-second survival countdown, HUD timer display,
  *              caught overlay, and win overlay.
  *
  * Game Loop Role:
@@ -484,7 +484,7 @@ const SurvivalManager = {
      *              (E key) — same key the caught overlay instructs the player to press.
      *
      * Object properties updated:
-     *   - this.remaining → SURVIVE_MS (10000)
+     *   - this.remaining → SURVIVE_MS (20000)
      *   - this.frozen    → false
      *   - this.lastResetTime → Date.now() (starts grace cooldown)
      *   - CAUGHT and WIN overlays hidden
@@ -721,7 +721,7 @@ class GameLevelstuck_final {
              *   - AlienChaseAI:                 resumed to spawn
              *
              * Observable reaction produced:
-             *   Timer resets to 10s; overlays hide; alien returns to spawn.
+             *   Timer resets to 20s; overlays hide; alien returns to spawn.
              */
             interact: function () {
                 SurvivalManager.reset();
