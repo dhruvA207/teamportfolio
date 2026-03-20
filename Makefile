@@ -288,6 +288,7 @@ wait-for-server:
 		if grep -q "Server address:" $(LOG_FILE); then \
 			echo "Server started in $$COUNTER seconds"; \
 			grep "Server address:" $(LOG_FILE); \
+			xdg-open http://$(HOST):$(PORT)/teamportfolio/ >/dev/null 2>&1 & \
 			break; \
 		fi; \
 		if [ $$COUNTER -eq 300 ]; then \
