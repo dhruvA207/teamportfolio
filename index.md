@@ -3,9 +3,10 @@ layout: post
 title: Portfolio Home 
 hide: true
 show_reading_time: false
+permalink: /
 ---
 
-Hi! My name is [Your Full Name]
+enter if you seek awesomeness.
 
 ### Development Environment
 
