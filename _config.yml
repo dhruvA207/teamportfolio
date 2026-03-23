@@ -15,12 +15,20 @@
 #   results) and in your feed.xml site description.
 
 title: Open Coding 
+<<<<<<< HEAD
 description: "Team Bob"
 owner_name: Dhruv Agrawal
 github_username: dhruvA207 
 github_repo: "teamportfolio" 
 url: "http://localhost:4599"
 baseurl: "/teamportfolio" 
+=======
+description: "Class of 2026"
+owner_name: John Mortensen
+github_username: jm1021 
+github_repo: "portfolio" 
+baseurl: "/portfolio" 
+>>>>>>> 484f09147ba06835a73f6f3dd4f9726e5e266052
 future: true
 
 # Build settings
