@@ -13,11 +13,7 @@ default: serve-current
 	@touch /tmp/.notebook_watch_marker
 	@make watch-notebooks &
 	@make watch-files &
-<<<<<<< HEAD
-	@echo "Server running in background on http://localhost:$(PORT)/teamportfolio/"
-=======
 	@echo "Server running in background on http://localhost:$(PORT)"
->>>>>>> 484f09147ba06835a73f6f3dd4f9726e5e266052
 	@echo "  View logs: tail -f $(LOG_FILE)"
 	@echo "  Stop: make stop"
 
@@ -292,10 +288,6 @@ wait-for-server:
 		if grep -q "Server address:" $(LOG_FILE); then \
 			echo "Server started in $$COUNTER seconds"; \
 			grep "Server address:" $(LOG_FILE); \
-<<<<<<< HEAD
-			xdg-open http://$(HOST):$(PORT)/teamportfolio/ >/dev/null 2>&1 & \
-=======
->>>>>>> 484f09147ba06835a73f6f3dd4f9726e5e266052
 			break; \
 		fi; \
 		if [ $$COUNTER -eq 300 ]; then \
