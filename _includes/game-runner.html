@@ -270,24 +270,55 @@
       
       // Setup game environment
       const path = '{{ site.baseurl }}';
-      const baseUrl = window.location.origin + path;
+      const baseUrl = window.location.origin + path.replace(/\/$/, ''); // no trailing slash
       
       // Get selected engine version
       const selectedVersion = engineVersionSelect ? engineVersionSelect.value : 'GameEnginev1';
       
       // Replace engine version in import paths (GameEnginev1 -> selected version)
       code = code.replace(/GameEnginev1(?:\.1)?/g, selectedVersion);
-      
-      // Replace relative import paths with absolute URLs
-      // Match import statements and convert paths starting with / or relative paths to absolute URLs
-      code = code.replace(/from\s+['"](\/?[^'"]+)['"]/g, (match, importPath) => {
-        // If path starts with / or is relative, make it absolute
-        if (importPath.startsWith('/')) {
-          return `from '${baseUrl}${importPath}'`;
-        } else if (!importPath.startsWith('http://') && !importPath.startsWith('https://')) {
-          return `from '${baseUrl}/${importPath}'`;
+
+      // Normalize a module specifier to an absolute URL (supports legacy adventureGame path mapping)
+      function normalizeImportSpecifier(specifier) {
+        if (!specifier) return specifier;
+        const s = specifier.trim();
+
+        if (/^(https?:|blob:|data:)/i.test(s)) {
+          return s;
         }
-        return match; // Already absolute
+
+        if (s.startsWith('/assets/js/adventureGame/')) {
+          let fileName = s.substring('/assets/js/adventureGame/'.length);
+          if (fileName === 'GameLevelSpacelevel3.js') {
+            fileName = 'GameLevelSpace3.js';
+          }
+          // For modules only available in v1, map to v1 when current is v1.1
+          const engineVersion = selectedVersion === 'GameEnginev1.1' ? 'GameEnginev1' : selectedVersion;
+          return `${window.location.origin}/assets/js/${engineVersion}/${fileName}`;
+        }
+
+        if (s.startsWith('/')) {
+          return `${window.location.origin}${s}`;
+        }
+
+        try {
+          return new URL(s, baseUrl + '/').href;
+        } catch (e) {
+          return s;
+        }
+      }
+
+      // Rewrite imports/dynamic imports to absolute URLs to avoid blob-relative resolution issues.
+      code = code.replace(/from\s+['"]([^'"]+)['"]/g, (match, importPath) => {
+        return `from '${normalizeImportSpecifier(importPath)}'`;
+      });
+
+      code = code.replace(/import\s+['"]([^'"]+)['"]/g, (match, importPath) => {
+        return `import '${normalizeImportSpecifier(importPath)}'`;
+      });
+
+      code = code.replace(/import\(\s*['"]([^'"]+)['"]\s*\)/g, (match, importPath) => {
+        return `import('${normalizeImportSpecifier(importPath)}')`;
       });
       
       // Import core Game engine (using selected version)
