@@ -3,17 +3,17 @@
 // How to use this file:
 // 1) Save as assets/js/adventureGame/GameLevelSpacelevel3.js in your repo.
 // 2) Reference it in your runner or level selector. Examples:
-//    import GameLevelPlanets from '/assets/js/GameEnginev1/GameLevelPlanets.js';
+//    import GameLevelPlanets from '/assets/js/GameEnginev1.1/GameLevelPlanets.js';
 //    import GameLevelSpacelevel3 from '/assets/js/adventureGame/GameLevelSpacelevel3.js';
 //    export const gameLevelClasses = [GameLevelPlanets, GameLevelSpacelevel3];
 //    // or pass it directly to your GameControl as the only level.
 // 3) Ensure images exist and paths resolve via 'path' provided by the engine.
 // 4) You can add more objects to this.classes inside the constructor.
 
-import GameEnvBackground from './essentials/GameEnvBackground.js';
-import Player from './essentials/Player.js';
-import Npc from './essentials/Npc.js';
-import Barrier from './essentials/Barrier.js';
+import GameEnvBackground from '../GameEnginev1.1/essentials/GameEnvBackground.js';
+import Player from '../GameEnginev1.1/essentials/Player.js';
+import Npc from '../GameEnginev1.1/essentials/Npc.js';
+import Barrier from '../GameEnginev1.1/essentials/Barrier.js';
 
 class GameLevelSpace {
     constructor(gameEnv) {
