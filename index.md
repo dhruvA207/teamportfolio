@@ -29,24 +29,12 @@ enter if you seek awesomeness.
 
 <br>
 
-### Class Progress
-
-> Here is my progress through coding, click to see these online
+### Team Progress
 
 <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-    <a href="{{site.baseurl}}/snake" style="text-decoration: none;">
-        <div style="background-color: #00FF00; color: black; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
-            Snake
-        </div>
-    </a>
-    <a href="{{site.baseurl}}/gamify/parallax" style="text-decoration: none;">
-        <div style="background-color: #3c1de8; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
-           Fish
-        </div>
-    </a>
-    <a href="{{site.baseurl}}/gamify/water" style="text-decoration: none;">
-        <div style="background-color: #b71dc5; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
-           Squid
+    <a href="{{site.baseurl}}/space-hub" style="text-decoration: none;">
+        <div style="background-color: #FF6347; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
+            Space Hub
         </div>
     </a>
 </div>
