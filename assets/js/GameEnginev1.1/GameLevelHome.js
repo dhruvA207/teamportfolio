@@ -136,13 +136,13 @@ class GameLevelHome {
         const path   = gameEnv.path;
 
         // ── Startup story popup ─────────────────────────────────────────────
-        initialize() {
-    if (this.gameEnv?.gameControl) {
-        this.gameEnv.gameLevelTransitionTriggered = false;
-    }
+       // initialize() 
+        if (this.gameEnv?.gameControl) {
+            this.gameEnv.gameLevelTransitionTriggered = false;
+        }
 
     GameLevelHome._showStartupPopup();
-}
+    
 
         // ── Background ─────────────────────────────────────────────────────
         const bgData = {
