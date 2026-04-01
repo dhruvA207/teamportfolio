@@ -154,11 +154,12 @@ const SurvivalManager = {
     lastResetTime: null,
 
     init() {
-        this.remaining    = INTERACTION_CONFIG.SURVIVE_MS;
-        this.frozen       = false;
+        this.remaining     = INTERACTION_CONFIG.SURVIVE_MS;
+        this.frozen        = false;
         this.lastResetTime = null;
         if (this.countdownId !== null) { clearInterval(this.countdownId); this.countdownId = null; }
 
+        // ── HUD timer ────────────────────────────────────────────────────────
         let hud = document.getElementById(INTERACTION_CONFIG.HUD_ELEMENT_ID);
         if (!hud) {
             hud = document.createElement('div');
@@ -177,41 +178,118 @@ const SurvivalManager = {
         }
         this._updateHUD();
 
-        if (!document.getElementById(INTERACTION_CONFIG.CAUGHT_OVERLAY_ID)) {
-            const el = document.createElement('div');
-            el.id = INTERACTION_CONFIG.CAUGHT_OVERLAY_ID;
-            Object.assign(el.style, {
-                display: 'none', position: 'fixed',
-                top: '0', left: '0', width: '100%', height: '100%',
-                background: 'rgba(0,0,0,0.78)',
-                color: '#ff4444', fontFamily: 'monospace',
-                fontSize: '40px', fontWeight: 'bold',
-                textAlign: 'center', paddingTop: '36vh',
-                zIndex: '10000', letterSpacing: '2px',
-                textShadow: '0 0 20px #ff4444'
-            });
-            el.innerHTML = '☠ CAUGHT!<br>' +
-                '<span style="font-size:20px;color:#fff;">Press E near the Alien to restart</span>';
-            document.body.appendChild(el);
-        }
+        // ── CAUGHT overlay ───────────────────────────────────────────────────
+        // Remove stale overlay so the button wiring is always fresh
+        const staleCaught = document.getElementById(INTERACTION_CONFIG.CAUGHT_OVERLAY_ID);
+        if (staleCaught) staleCaught.remove();
 
-        if (!document.getElementById(INTERACTION_CONFIG.WIN_OVERLAY_ID)) {
-            const el = document.createElement('div');
-            el.id = INTERACTION_CONFIG.WIN_OVERLAY_ID;
-            Object.assign(el.style, {
-                display: 'none', position: 'fixed',
-                top: '0', left: '0', width: '100%', height: '100%',
-                background: 'rgba(0,0,0,0.78)',
-                color: '#00ffcc', fontFamily: 'monospace',
-                fontSize: '40px', fontWeight: 'bold',
-                textAlign: 'center', paddingTop: '36vh',
-                zIndex: '10000', letterSpacing: '2px',
-                textShadow: '0 0 20px #00ffcc'
-            });
-            el.innerHTML = '🛸 YOU SURVIVED!<br>' +
-                '<span style="font-size:20px;color:#fff;">Level Complete — well done, astronaut!</span>';
-            document.body.appendChild(el);
-        }
+        const caught = document.createElement('div');
+        caught.id = INTERACTION_CONFIG.CAUGHT_OVERLAY_ID;
+        Object.assign(caught.style, {
+            display:        'none',
+            position:       'fixed',
+            top: '0', left: '0', width: '100%', height: '100%',
+            background:     'rgba(0,0,0,0.85)',
+            fontFamily:     "'Courier New', Courier, monospace",
+            textAlign:      'center',
+            paddingTop:     '28vh',
+            zIndex:         '10000',
+            boxSizing:      'border-box',
+        });
+        caught.innerHTML = `
+            <div style="
+                font-size:48px; font-weight:800; color:#ff4444;
+                letter-spacing:4px; text-shadow:0 0 28px #ff4444;
+                margin-bottom:10px;
+            ">☠ CAUGHT!</div>
+            <div style="
+                font-size:18px; color:#ffaaaa; letter-spacing:2px;
+                margin-bottom:36px;
+            ">The Slime got you. Try again.</div>
+            <div style="display:flex;gap:18px;justify-content:center;flex-wrap:wrap;">
+                <button id="caught-restart-btn" style="
+                    background: linear-gradient(135deg, #5a0010, #aa0025);
+                    color: #ffc8d0;
+                    border: 1px solid #cc0030;
+                    border-radius: 3px;
+                    padding: 13px 38px;
+                    font-family: 'Courier New', Courier, monospace;
+                    font-size: 0.92rem;
+                    font-weight: 700;
+                    letter-spacing: 3px;
+                    text-transform: uppercase;
+                    cursor: pointer;
+                    box-shadow: 0 0 18px rgba(200,0,50,0.5);
+                    transition: background 0.2s, box-shadow 0.2s;
+                ">↺ RETRY LEVEL</button>
+            </div>
+            <div style="
+                margin-top:22px; font-size:13px; color:#884455;
+                letter-spacing:2px;
+            ">— or press <span style="color:#ff4466;">E</span> near the Slime —</div>
+        `;
+        document.body.appendChild(caught);
+
+        // Wire the retry button — same as pressing E (SurvivalManager.reset)
+        document.getElementById('caught-restart-btn').addEventListener('click', () => {
+            SurvivalManager.reset();
+        });
+
+        // ── WIN overlay ──────────────────────────────────────────────────────
+        const staleWin = document.getElementById(INTERACTION_CONFIG.WIN_OVERLAY_ID);
+        if (staleWin) staleWin.remove();
+
+        const win = document.createElement('div');
+        win.id = INTERACTION_CONFIG.WIN_OVERLAY_ID;
+        Object.assign(win.style, {
+            display:        'none',
+            position:       'fixed',
+            top: '0', left: '0', width: '100%', height: '100%',
+            background:     'rgba(0,0,0,0.88)',
+            fontFamily:     "'Courier New', Courier, monospace",
+            textAlign:      'center',
+            paddingTop:     '26vh',
+            zIndex:         '10000',
+            boxSizing:      'border-box',
+        });
+        win.innerHTML = `
+            <div style="
+                font-size:52px; font-weight:800; color:#00ffcc;
+                letter-spacing:4px; text-shadow:0 0 32px #00ffcc;
+                margin-bottom:10px;
+            ">🛸 YOU SURVIVED!</div>
+            <div style="
+                font-size:18px; color:#a0ffe8; letter-spacing:2px;
+                margin-bottom:10px;
+            ">Level Complete — well done, astronaut!</div>
+            <div style="
+                font-size:13px; color:#00aa88; letter-spacing:3px;
+                text-transform:uppercase; margin-bottom:40px;
+            ">◈ SECTOR THREE — CLEARED ◈</div>
+            <div style="display:flex;gap:18px;justify-content:center;flex-wrap:wrap;">
+                <button id="win-hub-btn" style="
+                    background: linear-gradient(135deg, #003fa3, #0070e0);
+                    color: #c8e8ff;
+                    border: 1px solid #0070e0;
+                    border-radius: 3px;
+                    padding: 13px 38px;
+                    font-family: 'Courier New', Courier, monospace;
+                    font-size: 0.92rem;
+                    font-weight: 700;
+                    letter-spacing: 3px;
+                    text-transform: uppercase;
+                    cursor: pointer;
+                    box-shadow: 0 0 18px rgba(0,120,255,0.5);
+                    transition: background 0.2s, box-shadow 0.2s;
+                ">⬡ RETURN TO HUB</button>
+            </div>
+        `;
+        document.body.appendChild(win);
+
+        // Wire the hub button
+        document.getElementById('win-hub-btn').addEventListener('click', () => {
+            window.location.href = '/space-hub';
+        });
 
         this._startCountdown();
     },

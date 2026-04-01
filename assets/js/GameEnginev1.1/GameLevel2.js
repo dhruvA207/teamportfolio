@@ -2,8 +2,9 @@
  * @file GameLevel2.js
  * @description Adventure Game — Level 2: "Alien Maze"
  *
- * Barriers are invisible by default. On collision they briefly glow red.
- * Hitting any barrier resets the player to spawn (INIT_POSITION).
+ * Barriers are invisible by default. They glow at regular intervals
+ * (matching the popup's hint that the walls pulse). Hitting any barrier
+ * resets the player to spawn (INIT_POSITION).
  */
 
 import GameEnvBackground from '../GameEnginev1.1/essentials/GameEnvBackground.js';
@@ -11,45 +12,55 @@ import Player from '../GameEnginev1.1/essentials/Player.js';
 import Npc from '../GameEnginev1.1/essentials/Npc.js';
 import Barrier from '../GameEnginev1.1/essentials/Barrier.js';
 
-function _glowBarrier(barrierInstance) {
-    const glowId = 'barrier-glow-' + barrierInstance.data.id;
-    if (document.getElementById(glowId)) return;
+// ─── Passive barrier glow ────────────────────────────────────────────────────
+// Called on an interval; briefly illuminates every registered barrier.
+function _pulseAllBarriers(barrierDataList, canvas) {
+    const cr = canvas
+        ? canvas.getBoundingClientRect()
+        : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
 
-    const bx = barrierInstance.x      ?? 0;
-    const by = barrierInstance.y      ?? 0;
-    const bw = barrierInstance.width  ?? 20;
-    const bh = barrierInstance.height ?? 20;
+    barrierDataList.forEach(data => {
+        const glowId = 'barrier-glow-' + (data.id || 'unknown');
+        const old = document.getElementById(glowId);
+        if (old) old.remove();
 
-    const canvas = document.querySelector('canvas');
-    const cr = canvas ? canvas.getBoundingClientRect() : { left: 0, top: 0 };
+        const bx = (data.x ?? 0) * cr.width;
+        const by = (data.y ?? 0) * cr.height;
+        const bw = (data.width  ?? 0) * cr.width;
+        const bh = (data.height ?? 0) * cr.height;
 
-    const glow = document.createElement('div');
-    glow.id = glowId;
-    glow.style.cssText = `
-        position: fixed;
-        left:   ${cr.left + bx}px;
-        top:    ${cr.top  + by}px;
-        width:  ${bw}px;
-        height: ${bh}px;
-        border: 3px solid rgba(255, 80, 80, 1);
-        background: rgba(255, 60, 60, 0.35);
-        box-shadow: 0 0 18px 6px rgba(255, 60, 60, 0.8),
-                    0 0 40px 12px rgba(255, 0, 0, 0.45);
-        border-radius: 4px;
-        pointer-events: none;
-        z-index: 9997;
-        opacity: 1;
-        transition: opacity 0.5s ease;
-    `;
-    document.body.appendChild(glow);
-    setTimeout(() => { glow.style.opacity = '0'; }, 300);
-    setTimeout(() => { glow.remove(); }, 820);
+        const glow = document.createElement('div');
+        glow.id = glowId;
+        glow.style.cssText = `
+            position: fixed;
+            left: ${cr.left + bx}px;
+            top:  ${cr.top  + by}px;
+            width:  ${bw}px;
+            height: ${bh}px;
+            border: 2px solid rgba(0, 180, 255, 0.75);
+            background: rgba(0, 140, 255, 0.12);
+            box-shadow: 0 0 14px 4px rgba(0, 180, 255, 0.55),
+                        0 0 32px 8px rgba(0, 100, 255, 0.25);
+            border-radius: 4px;
+            pointer-events: none;
+            z-index: 999998;
+            opacity: 1;
+            transition: opacity 0.8s ease;
+        `;
+        document.body.appendChild(glow);
+
+        // Fade out after 600 ms, remove after 1.5 s
+        setTimeout(() => { glow.style.opacity = '0'; }, 600);
+        setTimeout(() => { glow.remove(); }, 1500);
+    });
 }
 
 class GameLevel2 {
     constructor(gameEnv) {
         this.gameEnv = gameEnv;
         this.levelTransitionTriggered = false;
+        this._glowInterval = null;      // stored so initialize() / destroy() can manage it
+
         const path   = gameEnv.path;
         const width  = gameEnv.innerWidth;
         const height = gameEnv.innerHeight;
@@ -82,9 +93,12 @@ class GameLevel2 {
             upRight:   { row: 3, start: 0, columns: 3, rotate: -Math.PI / 16 },
             hitbox: { widthPercentage: 0.2, heightPercentage: 0.4 },
             keypress: { up: 87, left: 65, down: 83, right: 68 },
+
             onBarrierCollision: function () {
+                // Reset player position — no glow triggered here
                 this.x = this.data.INIT_POSITION.x;
                 this.y = this.data.INIT_POSITION.y;
+
                 if (this.position) {
                     this.position.x = this.data.INIT_POSITION.x;
                     this.position.y = this.data.INIT_POSITION.y;
@@ -93,6 +107,7 @@ class GameLevel2 {
                     this.velocity.x = 0;
                     this.velocity.y = 0;
                 }
+
                 GameLevel2._showRestartFlash();
             }
         };
@@ -140,8 +155,7 @@ class GameLevel2 {
             height: h,
             visible: false,
             onCollide: function () {
-                console.log('BARRIER COLLISION', this, this.data);
-                _glowBarrier(this);
+                // Reset player position — no glow triggered here
                 const player = GameLevel2._findPlayer(gameEnv);
                 if (player) {
                     const init = player.data?.INIT_POSITION ?? { x: 100, y: 300 };
@@ -170,6 +184,12 @@ class GameLevel2 {
         const mazeWall3 = makeBarrier('maze_wall_3', 0.45, 0.55, 0.02, 0.20);
         const mazeWall4 = makeBarrier('maze_wall_4', 0.55, 0.45, 0.15, 0.02);
         const mazeWall5 = makeBarrier('maze_wall_5', 0.60, 0.25, 0.02, 0.35);
+
+        // Keep a reference to all barrier data so initialize() can pulse them
+        this._barrierDataList = [
+            mazeTop, mazeBottom, mazeLeftTop, mazeLeftBottom, mazeRight,
+            mazeWall1, mazeWall2, mazeWall3, mazeWall4, mazeWall5,
+        ];
 
         this.classes = [
             { class: GameEnvBackground, data: bgData         },
@@ -203,6 +223,32 @@ class GameLevel2 {
             if (found) return found;
         }
         return null;
+    }
+
+    // =========================================================================
+    // PASSIVE BARRIER GLOW — pulses every 4 seconds
+    // =========================================================================
+    _startBarrierGlow() {
+        if (this._glowInterval) return;             // already running
+
+        const pulse = () => {
+            const canvas = document.querySelector('canvas');
+            _pulseAllBarriers(this._barrierDataList, canvas);
+        };
+
+        pulse();                                     // fire immediately on start
+        this._glowInterval = setInterval(pulse, 4000); // then every 4 s
+    }
+
+    _stopBarrierGlow() {
+        if (this._glowInterval) {
+            clearInterval(this._glowInterval);
+            this._glowInterval = null;
+        }
+        // Remove any lingering glow divs
+        this._barrierDataList?.forEach(data => {
+            document.getElementById('barrier-glow-' + (data.id || 'unknown'))?.remove();
+        });
     }
 
     // =========================================================================
@@ -325,12 +371,12 @@ class GameLevel2 {
 
                     <p style="font-size: 0.93rem; line-height: 1.8; margin: 0 0 14px; color: #89bcee;">
                         Signal detected: <strong style="color:#4db8ff;">R2-D2</strong> is somewhere
-                        inside this alien maze — but the walls are
-                        <strong style="color:#ff4466;">completely invisible</strong>.
+                        inside this alien maze — the walls
+                        <strong style="color:#4db8ff;">pulse with blue light</strong> every few seconds
+                        to reveal themselves.
                     </p>
                     <p style="font-size: 0.93rem; line-height: 1.8; margin: 0 0 14px; color: #89bcee;">
-                        Touch a hidden wall and it will
-                        <strong style="color:#ff4466;">flash red</strong> — and you'll be sent
+                        Touch a hidden wall and you'll be sent
                         back to the start. Memory and patience are your only tools.
                     </p>
                     <p style="font-size: 0.93rem; line-height: 1.8; margin: 0 0 24px; color: #89bcee;">
@@ -354,7 +400,7 @@ class GameLevel2 {
                         <span style="color:#4db8ff;">A</span> Move Left &nbsp;·&nbsp;
                         <span style="color:#4db8ff;">D</span> Move Right<br>
                         <span style="color:#4db8ff;">E</span> Interact with R2-D2<br>
-                        <span style="color:#ff4466;">Warning</span> Invisible walls reset your position
+                        <span style="color:#4db8ff;">Walls pulse blue</span> every few seconds — memorize the path!
                     </div>
 
                     <div style="text-align:center;">
@@ -387,6 +433,7 @@ class GameLevel2 {
                     setTimeout(() => {
                         overlay.remove();
                         GameLevel2._startTime = Date.now();
+                        this._startBarrierGlow();   // begin pulsing once the player starts
                     }, 420);
                 });
             }
@@ -420,6 +467,15 @@ class GameLevel2 {
         if (this.gameEnv && this.gameEnv.gameControl) {
             this.gameEnv.gameLevelTransitionTriggered = false;
         }
+        // Start glow in case the popup was already dismissed (e.g. hot-reload)
+        if (GameLevel2._startTime) {
+            this._startBarrierGlow();
+        }
+    }
+
+    // Called by the game engine when leaving this level
+    destroy() {
+        this._stopBarrierGlow();
     }
 }
 
