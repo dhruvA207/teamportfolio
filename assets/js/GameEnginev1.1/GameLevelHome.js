@@ -135,6 +135,9 @@ class GameLevelHome {
         this.gameEnv = gameEnv;
         const path   = gameEnv.path;
 
+        // ── Startup story popup ─────────────────────────────────────────────
+        GameLevelHome._showStartupPopup();
+
         // ── Background ─────────────────────────────────────────────────────
         const bgData = {
             name:   'home_bg',
@@ -342,6 +345,210 @@ class GameLevelHome {
             { class: Npc,               data: npcR2D2      },
             { class: Npc,               data: npcSlime     },
         ];
+    }
+
+    // =========================================================================
+    // STARTUP STORY POPUP
+    // =========================================================================
+    static _showStartupPopup() {
+        const existing = document.getElementById('home-startup-popup');
+        if (existing) existing.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'home-startup-popup';
+        overlay.style.cssText = `
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.92);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            font-family: 'Courier New', Courier, monospace;
+            animation: home-fadein 0.6s ease forwards;
+        `;
+
+        // Inject keyframes once
+        if (!document.getElementById('home-popup-styles')) {
+            const style = document.createElement('style');
+            style.id = 'home-popup-styles';
+            style.textContent = `
+                @keyframes home-fadein {
+                    from { opacity: 0; }
+                    to   { opacity: 1; }
+                }
+                @keyframes home-scanline {
+                    0%   { transform: translateY(-100%); }
+                    100% { transform: translateY(100vh); }
+                }
+                @keyframes home-pulse-border {
+                    0%, 100% { box-shadow: 0 0 24px rgba(0,120,255,0.4), inset 0 0 24px rgba(0,60,180,0.08); }
+                    50%      { box-shadow: 0 0 48px rgba(0,160,255,0.7), inset 0 0 40px rgba(0,80,220,0.15); }
+                }
+                @keyframes home-glyph-flicker {
+                    0%, 95%, 100% { opacity: 1; }
+                    96%           { opacity: 0.2; }
+                    98%           { opacity: 0.8; }
+                }
+                #home-start-btn:hover {
+                    background: linear-gradient(135deg, #0050cc, #0090ff) !important;
+                    box-shadow: 0 0 32px rgba(0,160,255,0.8) !important;
+                    letter-spacing: 4px !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        overlay.innerHTML = `
+            <!-- Scanline sweep effect -->
+            <div style="
+                position: absolute; inset: 0; overflow: hidden;
+                pointer-events: none; z-index: 0;
+            ">
+                <div style="
+                    position: absolute; left: 0; right: 0; height: 3px;
+                    background: linear-gradient(to bottom, transparent, rgba(0,140,255,0.18), transparent);
+                    animation: home-scanline 4s linear infinite;
+                "></div>
+            </div>
+
+            <!-- Main card -->
+            <div style="
+                position: relative; z-index: 1;
+                background: linear-gradient(160deg, #00020f 0%, #000c26 60%, #000518 100%);
+                border: 1px solid #0050cc;
+                border-radius: 4px;
+                padding: 48px 52px 40px;
+                max-width: 540px;
+                width: 92%;
+                color: #a8d4ff;
+                animation: home-pulse-border 3s ease-in-out infinite;
+                overflow: hidden;
+            ">
+                <!-- Corner accents -->
+                <div style="position:absolute;top:10px;left:10px;width:18px;height:18px;border-top:2px solid #0080ff;border-left:2px solid #0080ff;"></div>
+                <div style="position:absolute;top:10px;right:10px;width:18px;height:18px;border-top:2px solid #0080ff;border-right:2px solid #0080ff;"></div>
+                <div style="position:absolute;bottom:10px;left:10px;width:18px;height:18px;border-bottom:2px solid #0080ff;border-left:2px solid #0080ff;"></div>
+                <div style="position:absolute;bottom:10px;right:10px;width:18px;height:18px;border-bottom:2px solid #0080ff;border-right:2px solid #0080ff;"></div>
+
+                <!-- Header glyph -->
+                <div style="
+                    text-align: center;
+                    font-size: 11px;
+                    letter-spacing: 6px;
+                    color: #0070dd;
+                    text-transform: uppercase;
+                    margin-bottom: 10px;
+                    animation: home-glyph-flicker 5s infinite;
+                ">◈ SECTOR ZERO ◈</div>
+
+                <h1 style="
+                    text-align: center;
+                    font-size: 1.9rem;
+                    color: #1a90ff;
+                    margin: 0 0 4px;
+                    letter-spacing: 3px;
+                    text-transform: uppercase;
+                    text-shadow: 0 0 24px rgba(0,140,255,0.6);
+                ">ASTRO ODYSSEY</h1>
+
+                <div style="
+                    text-align: center;
+                    font-size: 10px;
+                    color: #004499;
+                    letter-spacing: 5px;
+                    margin-bottom: 28px;
+                    text-transform: uppercase;
+                ">MISSION BRIEFING — CLASSIFIED</div>
+
+                <!-- Divider -->
+                <div style="
+                    height: 1px;
+                    background: linear-gradient(to right, transparent, #0060cc, transparent);
+                    margin-bottom: 24px;
+                "></div>
+
+                <!-- Story text -->
+                <p style="
+                    font-size: 0.93rem;
+                    line-height: 1.8;
+                    margin: 0 0 14px;
+                    color: #89bcee;
+                ">
+                    You are <strong style="color:#4db8ff;">ASTRO-7</strong>, an elite explorer
+                    deployed to an uncharted alien world. Your ship's logs are corrupted.
+                    Your crew — scattered.
+                </p>
+                <p style="
+                    font-size: 0.93rem;
+                    line-height: 1.8;
+                    margin: 0 0 14px;
+                    color: #89bcee;
+                ">
+                    Three contacts have been detected across the planet's surface.
+                    Seek them out. Each holds a fragment of the data you need to
+                    <strong style="color:#4db8ff;">restore the mission</strong> — but
+                    you'll have to earn it.
+                </p>
+                <p style="
+                    font-size: 0.93rem;
+                    line-height: 1.8;
+                    margin: 0 0 24px;
+                    color: #89bcee;
+                ">
+                    One will ask you to <strong style="color:#4db8ff;">explore</strong>.
+                    One will ask you to <strong style="color:#4db8ff;">navigate</strong>.
+                    One will ask you to <strong style="color:#ff4466;">survive</strong>.
+                </p>
+
+                <!-- Intel box -->
+                <div style="
+                    background: rgba(0, 60, 150, 0.12);
+                    border: 1px solid rgba(0,100,220,0.3);
+                    border-radius: 3px;
+                    padding: 14px 18px;
+                    margin-bottom: 28px;
+                    font-size: 0.85rem;
+                    line-height: 1.9;
+                    color: #6aaee8;
+                ">
+                    <div style="color:#0080ff;letter-spacing:3px;font-size:10px;margin-bottom:6px;text-transform:uppercase;">▸ Field Controls</div>
+                    <span style="color:#4db8ff;">W</span> Move Up &nbsp;·&nbsp;
+                    <span style="color:#4db8ff;">S</span> Move Down<br>
+                    <span style="color:#4db8ff;">A</span> Move Left &nbsp;·&nbsp;
+                    <span style="color:#4db8ff;">D</span> Move Right<br>
+                    <span style="color:#4db8ff;">E</span> Interact with contacts<br>
+                    <span style="color:#4db8ff;">Coins</span> scattered — collect them all
+                </div>
+
+                <!-- CTA button -->
+                <div style="text-align:center;">
+                    <button id="home-start-btn" style="
+                        background: linear-gradient(135deg, #003fa3, #0070e0);
+                        color: #c8e8ff;
+                        border: 1px solid #0070e0;
+                        border-radius: 3px;
+                        padding: 13px 44px;
+                        font-family: 'Courier New', Courier, monospace;
+                        font-size: 0.95rem;
+                        font-weight: 700;
+                        letter-spacing: 3px;
+                        text-transform: uppercase;
+                        cursor: pointer;
+                        box-shadow: 0 0 22px rgba(0,120,255,0.5);
+                        transition: background 0.2s, box-shadow 0.2s, letter-spacing 0.2s;
+                    ">DEPLOY →</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        document.getElementById('home-start-btn').addEventListener('click', () => {
+            overlay.style.transition = 'opacity 0.4s ease';
+            overlay.style.opacity    = '0';
+            setTimeout(() => overlay.remove(), 420);
+        });
     }
 
     /**
