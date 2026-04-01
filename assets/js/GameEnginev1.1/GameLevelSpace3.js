@@ -1,14 +1,5 @@
 // Adventure Game Custom Level
 // Exported from GameBuilder on 2026-03-06T03:54:46.013Z
-// How to use this file:
-// 1) Save as assets/js/adventureGame/GameLevelSpacelevel3.js in your repo.
-// 2) Reference it in your runner or level selector. Examples:
-//    import GameLevelPlanets from '/assets/js/GameEnginev1.1/GameLevelPlanets.js';
-//    import GameLevelSpacelevel3 from '/assets/js/adventureGame/GameLevelSpacelevel3.js';
-//    export const gameLevelClasses = [GameLevelPlanets, GameLevelSpacelevel3];
-//    // or pass it directly to your GameControl as the only level.
-// 3) Ensure images exist and paths resolve via 'path' provided by the engine.
-// 4) You can add more objects to this.classes inside the constructor.
 
 import GameEnvBackground from '../GameEnginev1.1/essentials/GameEnvBackground.js';
 import Player from '../GameEnginev1.1/essentials/Player.js';
@@ -22,6 +13,8 @@ class GameLevelSpace {
         const path = gameEnv.path;
         const width = gameEnv.innerWidth;
         const height = gameEnv.innerHeight;
+
+        GameLevelSpace._showStartupPopup();
 
         const bgData = {
             name: "custom_bg",
@@ -48,7 +41,7 @@ class GameLevelSpace {
             upRight: { row: 3, start: 0, columns: 3, rotate: -Math.PI/16 },
             hitbox: { widthPercentage: 0, heightPercentage: 0 },
             keypress: { up: 38, left: 37, down: 40, right: 39 }
-            };
+        };
 
         const npcData1 = {
             id: '1',
@@ -70,17 +63,16 @@ class GameLevelSpace {
             hitbox: { widthPercentage: 0.1, heightPercentage: 0.2 },
             dialogues: ['Hi, I am a chill guy. Touch the moon but don\'t fly too high.', 'Good luck on your adventure!', 'Time to move to the next level!'],
             reaction: function() { if (this.dialogueSystem) { this.showReactionDialogue(); } else { console.log(this.greeting); } },
-            interact: function() { 
-                // Show dialogue if available
-                if (this.dialogueSystem) { 
-                    this.showRandomDialogue(); 
+            interact: function() {
+                if (this.dialogueSystem) {
+                    this.showRandomDialogue();
                 }
-                // Trigger level transition immediately (same effect as hitting ESC)
                 if (this.gameEnv && this.gameEnv.gameControl && this.gameEnv.gameControl.currentLevel) {
                     this.gameEnv.gameControl.currentLevel.continue = false;
                 }
             }
         };
+
         const dbarrier_1 = {
             id: 'dbarrier_1', x: 700, y: 100, width: 150, height: 20, visible: true,
             hitbox: { widthPercentage: 0.0, heightPercentage: 0.0 },
@@ -110,25 +102,207 @@ class GameLevelSpace {
             hitbox: { widthPercentage: 0.0, heightPercentage: 0.0 },
             fromOverlay: true
         };
-this.classes = [      { class: GameEnvBackground, data: bgData },
-      { class: Player, data: playerData },
-      { class: Npc, data: npcData1 },
-      { class: Barrier, data: dbarrier_1 },
-      { class: Barrier, data: dbarrier_2 },
-      { class: Barrier, data: dbarrier_3 },
-      { class: Barrier, data: dbarrier_4 },
-      { class: Barrier, data: dbarrier_5 }
-];
 
+        this.classes = [
+            { class: GameEnvBackground, data: bgData },
+            { class: Player, data: playerData },
+            { class: Npc, data: npcData1 },
+            { class: Barrier, data: dbarrier_1 },
+            { class: Barrier, data: dbarrier_2 },
+            { class: Barrier, data: dbarrier_3 },
+            { class: Barrier, data: dbarrier_4 },
+            { class: Barrier, data: dbarrier_5 }
+        ];
     }
 
-    /**
-     * Initialize method called after level creation
-     * Sets up transition tracking on the gameEnv
-     */
+    // =========================================================================
+    // STARTUP POPUP — matches GameLevelHome style
+    // =========================================================================
+    static _showStartupPopup() {
+        const renderPopup = () => {
+            const existing = document.getElementById('level1-startup-popup');
+            if (existing) existing.remove();
+
+            if (!document.body) return;
+
+            const overlay = document.createElement('div');
+            overlay.id = 'level1-startup-popup';
+            overlay.style.cssText = `
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.92);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 999999;
+                font-family: 'Courier New', Courier, monospace;
+                animation: l1-fadein 0.6s ease forwards;
+            `;
+
+            if (!document.getElementById('level1-popup-styles')) {
+                const style = document.createElement('style');
+                style.id = 'level1-popup-styles';
+                style.textContent = `
+                    @keyframes l1-fadein {
+                        from { opacity: 0; }
+                        to   { opacity: 1; }
+                    }
+                    @keyframes l1-scanline {
+                        0%   { transform: translateY(-100%); }
+                        100% { transform: translateY(100vh); }
+                    }
+                    @keyframes l1-pulse-border {
+                        0%, 100% { box-shadow: 0 0 24px rgba(0,120,255,0.4), inset 0 0 24px rgba(0,60,180,0.08); }
+                        50%      { box-shadow: 0 0 48px rgba(0,160,255,0.7), inset 0 0 40px rgba(0,80,220,0.15); }
+                    }
+                    @keyframes l1-glyph-flicker {
+                        0%, 95%, 100% { opacity: 1; }
+                        96%           { opacity: 0.2; }
+                        98%           { opacity: 0.8; }
+                    }
+                    #level1-start-btn:hover {
+                        background: linear-gradient(135deg, #0050cc, #0090ff) !important;
+                        box-shadow: 0 0 32px rgba(0,160,255,0.8) !important;
+                        letter-spacing: 4px !important;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            overlay.innerHTML = `
+                <div style="
+                    position: absolute; inset: 0; overflow: hidden;
+                    pointer-events: none; z-index: 0;
+                ">
+                    <div style="
+                        position: absolute; left: 0; right: 0; height: 3px;
+                        background: linear-gradient(to bottom, transparent, rgba(0,140,255,0.18), transparent);
+                        animation: l1-scanline 4s linear infinite;
+                    "></div>
+                </div>
+
+                <div style="
+                    position: relative; z-index: 1;
+                    background: linear-gradient(160deg, #00020f 0%, #000c26 60%, #000518 100%);
+                    border: 1px solid #0050cc;
+                    border-radius: 4px;
+                    padding: 48px 52px 40px;
+                    max-width: 540px;
+                    width: 92%;
+                    color: #a8d4ff;
+                    animation: l1-pulse-border 3s ease-in-out infinite;
+                    overflow: hidden;
+                ">
+                    <div style="position:absolute;top:10px;left:10px;width:18px;height:18px;border-top:2px solid #0080ff;border-left:2px solid #0080ff;"></div>
+                    <div style="position:absolute;top:10px;right:10px;width:18px;height:18px;border-top:2px solid #0080ff;border-right:2px solid #0080ff;"></div>
+                    <div style="position:absolute;bottom:10px;left:10px;width:18px;height:18px;border-bottom:2px solid #0080ff;border-left:2px solid #0080ff;"></div>
+                    <div style="position:absolute;bottom:10px;right:10px;width:18px;height:18px;border-bottom:2px solid #0080ff;border-right:2px solid #0080ff;"></div>
+
+                    <div style="
+                        text-align: center;
+                        font-size: 11px;
+                        letter-spacing: 6px;
+                        color: #0070dd;
+                        text-transform: uppercase;
+                        margin-bottom: 10px;
+                        animation: l1-glyph-flicker 5s infinite;
+                    ">◈ SECTOR ONE ◈</div>
+
+                    <h1 style="
+                        text-align: center;
+                        font-size: 1.9rem;
+                        color: #1a90ff;
+                        margin: 0 0 4px;
+                        letter-spacing: 3px;
+                        text-transform: uppercase;
+                        text-shadow: 0 0 24px rgba(0,140,255,0.6);
+                    ">ALIEN PLANET</h1>
+
+                    <div style="
+                        text-align: center;
+                        font-size: 10px;
+                        color: #004499;
+                        letter-spacing: 5px;
+                        margin-bottom: 28px;
+                        text-transform: uppercase;
+                    ">LEVEL 1 BRIEFING — EXPLORATION</div>
+
+                    <div style="
+                        height: 1px;
+                        background: linear-gradient(to right, transparent, #0060cc, transparent);
+                        margin-bottom: 24px;
+                    "></div>
+
+                    <p style="font-size: 0.93rem; line-height: 1.8; margin: 0 0 14px; color: #89bcee;">
+                        You've landed on an alien world. <strong style="color:#4db8ff;">Chill Guy</strong> is
+                        somewhere on this planet — find him and interact to progress.
+                    </p>
+                    <p style="font-size: 0.93rem; line-height: 1.8; margin: 0 0 14px; color: #89bcee;">
+                        Watch out for the <strong style="color:#4db8ff;">terrain barriers</strong> scattered
+                        across the landscape. Navigate carefully to reach your contact.
+                    </p>
+                    <p style="font-size: 0.93rem; line-height: 1.8; margin: 0 0 24px; color: #89bcee;">
+                        When you find Chill Guy, press <strong style="color:#4db8ff;">E</strong> to interact
+                        and unlock the path to <strong style="color:#4db8ff;">Level 2</strong>.
+                    </p>
+
+                    <div style="
+                        background: rgba(0, 60, 150, 0.12);
+                        border: 1px solid rgba(0,100,220,0.3);
+                        border-radius: 3px;
+                        padding: 14px 18px;
+                        margin-bottom: 28px;
+                        font-size: 0.85rem;
+                        line-height: 1.9;
+                        color: #6aaee8;
+                    ">
+                        <div style="color:#0080ff;letter-spacing:3px;font-size:10px;margin-bottom:6px;text-transform:uppercase;">▸ Field Controls</div>
+                        <span style="color:#4db8ff;">↑ ↓ ← →</span> Move (Arrow Keys)<br>
+                        <span style="color:#4db8ff;">E</span> Interact with Chill Guy<br>
+                        <span style="color:#4db8ff;">Objective</span> Reach Chill Guy to advance
+                    </div>
+
+                    <div style="text-align:center;">
+                        <button id="level1-start-btn" style="
+                            background: linear-gradient(135deg, #003fa3, #0070e0);
+                            color: #c8e8ff;
+                            border: 1px solid #0070e0;
+                            border-radius: 3px;
+                            padding: 13px 44px;
+                            font-family: 'Courier New', Courier, monospace;
+                            font-size: 0.95rem;
+                            font-weight: 700;
+                            letter-spacing: 3px;
+                            text-transform: uppercase;
+                            cursor: pointer;
+                            box-shadow: 0 0 22px rgba(0,120,255,0.5);
+                            transition: background 0.2s, box-shadow 0.2s, letter-spacing 0.2s;
+                        ">DEPLOY →</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+
+            const startBtn = document.getElementById('level1-start-btn');
+            if (startBtn) {
+                startBtn.addEventListener('click', () => {
+                    overlay.style.transition = 'opacity 0.4s ease';
+                    overlay.style.opacity = '0';
+                    setTimeout(() => overlay.remove(), 420);
+                });
+            }
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', renderPopup, { once: true });
+        } else {
+            renderPopup();
+        }
+    }
+
     initialize() {
         if (this.gameEnv && this.gameEnv.gameControl) {
-            // Flag to track if transition has been triggered for this level
             this.gameEnv.gameLevelTransitionTriggered = false;
         }
     }
