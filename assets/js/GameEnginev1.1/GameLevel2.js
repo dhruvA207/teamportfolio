@@ -139,8 +139,8 @@ class GameLevel2 {
             width: w,
             height: h,
             visible: false,
-            hitbox: { widthPercentage: 0.0, heightPercentage: 0.0 },
             onCollide: function () {
+                console.log('BARRIER COLLISION', this, this.data);
                 _glowBarrier(this);
                 const player = GameLevel2._findPlayer(gameEnv);
                 if (player) {
