@@ -136,7 +136,13 @@ class GameLevelHome {
         const path   = gameEnv.path;
 
         // ── Startup story popup ─────────────────────────────────────────────
-        GameLevelHome._showStartupPopup();
+        initialize() {
+    if (this.gameEnv?.gameControl) {
+        this.gameEnv.gameLevelTransitionTriggered = false;
+    }
+
+    GameLevelHome._showStartupPopup();
+}
 
         // ── Background ─────────────────────────────────────────────────────
         const bgData = {
@@ -351,8 +357,11 @@ class GameLevelHome {
     // STARTUP STORY POPUP
     // =========================================================================
     static _showStartupPopup() {
+    const renderPopup = () => {
         const existing = document.getElementById('home-startup-popup');
         if (existing) existing.remove();
+
+        if (!document.body) return;
 
         const overlay = document.createElement('div');
         overlay.id = 'home-startup-popup';
@@ -363,12 +372,11 @@ class GameLevelHome {
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 9999;
+            z-index: 999999;
             font-family: 'Courier New', Courier, monospace;
             animation: home-fadein 0.6s ease forwards;
         `;
 
-        // Inject keyframes once
         if (!document.getElementById('home-popup-styles')) {
             const style = document.createElement('style');
             style.id = 'home-popup-styles';
@@ -400,7 +408,6 @@ class GameLevelHome {
         }
 
         overlay.innerHTML = `
-            <!-- Scanline sweep effect -->
             <div style="
                 position: absolute; inset: 0; overflow: hidden;
                 pointer-events: none; z-index: 0;
@@ -412,7 +419,6 @@ class GameLevelHome {
                 "></div>
             </div>
 
-            <!-- Main card -->
             <div style="
                 position: relative; z-index: 1;
                 background: linear-gradient(160deg, #00020f 0%, #000c26 60%, #000518 100%);
@@ -425,13 +431,11 @@ class GameLevelHome {
                 animation: home-pulse-border 3s ease-in-out infinite;
                 overflow: hidden;
             ">
-                <!-- Corner accents -->
                 <div style="position:absolute;top:10px;left:10px;width:18px;height:18px;border-top:2px solid #0080ff;border-left:2px solid #0080ff;"></div>
                 <div style="position:absolute;top:10px;right:10px;width:18px;height:18px;border-top:2px solid #0080ff;border-right:2px solid #0080ff;"></div>
                 <div style="position:absolute;bottom:10px;left:10px;width:18px;height:18px;border-bottom:2px solid #0080ff;border-left:2px solid #0080ff;"></div>
                 <div style="position:absolute;bottom:10px;right:10px;width:18px;height:18px;border-bottom:2px solid #0080ff;border-right:2px solid #0080ff;"></div>
 
-                <!-- Header glyph -->
                 <div style="
                     text-align: center;
                     font-size: 11px;
@@ -461,47 +465,29 @@ class GameLevelHome {
                     text-transform: uppercase;
                 ">MISSION BRIEFING — CLASSIFIED</div>
 
-                <!-- Divider -->
                 <div style="
                     height: 1px;
                     background: linear-gradient(to right, transparent, #0060cc, transparent);
                     margin-bottom: 24px;
                 "></div>
 
-                <!-- Story text -->
-                <p style="
-                    font-size: 0.93rem;
-                    line-height: 1.8;
-                    margin: 0 0 14px;
-                    color: #89bcee;
-                ">
+                <p style="font-size: 0.93rem; line-height: 1.8; margin: 0 0 14px; color: #89bcee;">
                     You are <strong style="color:#4db8ff;">ASTRO-7</strong>, an elite explorer
                     deployed to an uncharted alien world. Your ship's logs are corrupted.
                     Your crew — scattered.
                 </p>
-                <p style="
-                    font-size: 0.93rem;
-                    line-height: 1.8;
-                    margin: 0 0 14px;
-                    color: #89bcee;
-                ">
+                <p style="font-size: 0.93rem; line-height: 1.8; margin: 0 0 14px; color: #89bcee;">
                     Three contacts have been detected across the planet's surface.
                     Seek them out. Each holds a fragment of the data you need to
                     <strong style="color:#4db8ff;">restore the mission</strong> — but
                     you'll have to earn it.
                 </p>
-                <p style="
-                    font-size: 0.93rem;
-                    line-height: 1.8;
-                    margin: 0 0 24px;
-                    color: #89bcee;
-                ">
+                <p style="font-size: 0.93rem; line-height: 1.8; margin: 0 0 24px; color: #89bcee;">
                     One will ask you to <strong style="color:#4db8ff;">explore</strong>.
                     One will ask you to <strong style="color:#4db8ff;">navigate</strong>.
                     One will ask you to <strong style="color:#ff4466;">survive</strong>.
                 </p>
 
-                <!-- Intel box -->
                 <div style="
                     background: rgba(0, 60, 150, 0.12);
                     border: 1px solid rgba(0,100,220,0.3);
@@ -521,7 +507,6 @@ class GameLevelHome {
                     <span style="color:#4db8ff;">Coins</span> scattered — collect them all
                 </div>
 
-                <!-- CTA button -->
                 <div style="text-align:center;">
                     <button id="home-start-btn" style="
                         background: linear-gradient(135deg, #003fa3, #0070e0);
@@ -544,12 +529,22 @@ class GameLevelHome {
 
         document.body.appendChild(overlay);
 
-        document.getElementById('home-start-btn').addEventListener('click', () => {
-            overlay.style.transition = 'opacity 0.4s ease';
-            overlay.style.opacity    = '0';
-            setTimeout(() => overlay.remove(), 420);
-        });
+        const startBtn = document.getElementById('home-start-btn');
+        if (startBtn) {
+            startBtn.addEventListener('click', () => {
+                overlay.style.transition = 'opacity 0.4s ease';
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.remove(), 420);
+            });
+        }
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', renderPopup, { once: true });
+    } else {
+        renderPopup();
     }
+}
 
     /**
      * Called by the engine after the level is constructed.
