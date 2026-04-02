@@ -45,7 +45,7 @@ class GameLevelSpace {
 
         const npcData1 = {
             id: '1',
-            greeting: 'Hi, I am a chill guy. Touch the moon but don\'t fly too high.',
+            greeting: 'Hey! Nice to meet you, astronaut.',
             src: path + "/images/gamify/chillguy.png",
             SCALE_FACTOR: 8,
             ANIMATION_RATE: 50,
@@ -61,15 +61,14 @@ class GameLevelSpace {
             upLeft: { row: Math.min(2, 4 - 1), start: 0, columns: 3 },
             downLeft: { row: 0, start: 0, columns: 3 },
             hitbox: { widthPercentage: 0.1, heightPercentage: 0.2 },
-            dialogues: ['Hi, I am a chill guy. Touch the moon but don\'t fly too high.', 'Good luck on your adventure!', 'Time to move to the next level!'],
-            reaction: function() { if (this.dialogueSystem) { this.showReactionDialogue(); } else { console.log(this.greeting); } },
+            dialogues: ['Hey! Nice to meet you, astronaut.', 'Good luck on your adventure!', 'Time to move to the next level!'],
+            reaction: function() {
+                if (this.dialogueSystem) { this.showReactionDialogue(); }
+                else { console.log(this.greeting); }
+            },
             interact: function() {
-                if (this.dialogueSystem) {
-                    this.showRandomDialogue();
-                }
-                if (this.gameEnv && this.gameEnv.gameControl && this.gameEnv.gameControl.currentLevel) {
-                    this.gameEnv.gameControl.currentLevel.continue = false;
-                }
+                if (this.dialogueSystem) { this.showRandomDialogue(); }
+                GameLevelSpace._showVictoryScreen(this.gameEnv);
             }
         };
 
@@ -113,6 +112,116 @@ class GameLevelSpace {
             { class: Barrier, data: dbarrier_4 },
             { class: Barrier, data: dbarrier_5 }
         ];
+    }
+
+    // =========================================================================
+    // VICTORY SCREEN
+    // =========================================================================
+    static _showVictoryScreen(gameEnv) {
+        if (document.getElementById('level1-victory-overlay')) return;
+
+        if (!document.getElementById('level1-victory-styles')) {
+            const style = document.createElement('style');
+            style.id = 'level1-victory-styles';
+            style.textContent = `
+                @keyframes l1-win-fadein {
+                    from { opacity: 0; transform: scale(0.96); }
+                    to   { opacity: 1; transform: scale(1); }
+                }
+                @keyframes l1-win-pulse {
+                    0%, 100% { box-shadow: 0 0 24px rgba(0,220,150,0.4), inset 0 0 24px rgba(0,120,80,0.08); }
+                    50%      { box-shadow: 0 0 52px rgba(0,255,180,0.7), inset 0 0 40px rgba(0,160,100,0.15); }
+                }
+                @keyframes l1-win-float {
+                    0%, 100% { transform: translateY(0px); }
+                    50%      { transform: translateY(-6px); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        const overlay = document.createElement('div');
+        overlay.id = 'level1-victory-overlay';
+        Object.assign(overlay.style, {
+            position:   'fixed',
+            inset:      '0',
+            background: 'rgba(0, 0, 0, 0.88)',
+            display:    'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex:     '10000',
+            fontFamily: "'Courier New', Courier, monospace",
+        });
+
+        overlay.innerHTML = `
+            <div style="
+                background: linear-gradient(160deg, #000f08 0%, #001a10 60%, #000c07 100%);
+                border: 1px solid #00aa66;
+                border-radius: 4px;
+                padding: 52px 56px 44px;
+                max-width: 520px;
+                width: 92%;
+                color: #a0ffd8;
+                text-align: center;
+                animation: l1-win-fadein 0.5s ease forwards, l1-win-pulse 3s ease-in-out infinite;
+                position: relative;
+                overflow: hidden;
+            ">
+                <div style="position:absolute;top:10px;left:10px;width:18px;height:18px;border-top:2px solid #00cc88;border-left:2px solid #00cc88;"></div>
+                <div style="position:absolute;top:10px;right:10px;width:18px;height:18px;border-top:2px solid #00cc88;border-right:2px solid #00cc88;"></div>
+                <div style="position:absolute;bottom:10px;left:10px;width:18px;height:18px;border-bottom:2px solid #00cc88;border-left:2px solid #00cc88;"></div>
+                <div style="position:absolute;bottom:10px;right:10px;width:18px;height:18px;border-bottom:2px solid #00cc88;border-right:2px solid #00cc88;"></div>
+
+                <div style="
+                    font-size: 64px;
+                    animation: l1-win-float 2.4s ease-in-out infinite;
+                    margin-bottom: 8px;
+                    line-height: 1;
+                ">😎</div>
+
+                <div style="
+                    font-size: 11px; letter-spacing: 6px; color: #008855;
+                    text-transform: uppercase; margin-bottom: 10px;
+                ">◈ SECTOR ONE — CLEARED ◈</div>
+
+                <h1 style="
+                    font-size: 2rem; color: #00ffaa; margin: 0 0 6px;
+                    letter-spacing: 3px; text-transform: uppercase;
+                    text-shadow: 0 0 28px rgba(0,255,170,0.65);
+                ">NICE TO MEET YOU!</h1>
+
+                <p style="
+                    font-size: 0.95rem; line-height: 1.8;
+                    color: #80eecc; margin: 18px 0 10px;
+                ">
+                    <strong style="color:#00ffaa;">Chill Guy</strong> says:<br>
+                    <em style="color:#a0ffd8;">"Hey, astronaut — good to finally meet you.<br>
+                    Stay cool out there. Level 2 is a whole other vibe."</em>
+                </p>
+
+                <p style="font-size: 0.85rem; color: #009966; letter-spacing: 2px; margin: 0 0 32px; text-transform: uppercase;">
+                    Advancing to Level 2…
+                </p>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        // Transition to next level after a beat
+        setTimeout(() => {
+            if (gameEnv && gameEnv.gameControl && !gameEnv.gameLevelTransitionTriggered) {
+                gameEnv.gameLevelTransitionTriggered = true;
+                if (gameEnv.gameControl.currentLevel) {
+                    gameEnv.gameControl.currentLevel.continue = false;
+                }
+            }
+        }, 3200);
+
+        // Fade out overlay as level transitions
+        setTimeout(() => {
+            overlay.style.transition = 'opacity 0.5s ease';
+            overlay.style.opacity = '0';
+        }, 2800);
     }
 
     // =========================================================================

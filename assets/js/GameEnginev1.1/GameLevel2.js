@@ -59,7 +59,7 @@ class GameLevel2 {
     constructor(gameEnv) {
         this.gameEnv = gameEnv;
         this.levelTransitionTriggered = false;
-        this._glowInterval = null;      // stored so initialize() / destroy() can manage it
+        this._glowInterval = null;
 
         const path   = gameEnv.path;
         const width  = gameEnv.innerWidth;
@@ -95,7 +95,6 @@ class GameLevel2 {
             keypress: { up: 87, left: 65, down: 83, right: 68 },
 
             onBarrierCollision: function () {
-                // Reset player position — no glow triggered here
                 this.x = this.data.INIT_POSITION.x;
                 this.y = this.data.INIT_POSITION.y;
 
@@ -114,7 +113,6 @@ class GameLevel2 {
 
         const npcData1 = {
             id: 'NPC_r2',
-            greeting: 'You made it through the maze! Ready for the next level?',
             src: path + "/images/gamify/r2_idle.png",
             SCALE_FACTOR: 7,
             ANIMATION_RATE: 50,
@@ -130,21 +128,9 @@ class GameLevel2 {
             upLeft:    { row: Math.min(2, 0), start: 0, columns: 3 },
             downLeft:  { row: 0,              start: 0, columns: 3 },
             hitbox: { widthPercentage: 0.1, heightPercentage: 0.2 },
-            dialogues: ['You made it through the maze! Ready for the next level?'],
-            reaction: function () {
-                if (this.dialogueSystem) { this.showReactionDialogue(); }
-                else { console.log(this.greeting); }
-            },
+            // No dialogues — victory screen replaces the prompt
             interact: function () {
-                if (this.dialogueSystem) { this.showRandomDialogue(); }
-                // Trigger level transition directly — no victory screen
-                setTimeout(() => {
-                    if (this.gameEnv && this.gameEnv.gameControl &&
-                        !this.gameEnv.gameLevelTransitionTriggered) {
-                        this.gameEnv.gameLevelTransitionTriggered = true;
-                        this.gameEnv.gameControl.currentLevel.continue = false;
-                    }
-                }, 800);
+                GameLevel2._showVictoryScreen(gameEnv);
             }
         };
 
@@ -155,7 +141,6 @@ class GameLevel2 {
             height: h,
             visible: false,
             onCollide: function () {
-                // Reset player position — no glow triggered here
                 const player = GameLevel2._findPlayer(gameEnv);
                 if (player) {
                     const init = player.data?.INIT_POSITION ?? { x: 100, y: 300 };
@@ -185,7 +170,6 @@ class GameLevel2 {
         const mazeWall4 = makeBarrier('maze_wall_4', 0.55, 0.45, 0.15, 0.02);
         const mazeWall5 = makeBarrier('maze_wall_5', 0.60, 0.25, 0.02, 0.35);
 
-        // Keep a reference to all barrier data so initialize() can pulse them
         this._barrierDataList = [
             mazeTop, mazeBottom, mazeLeftTop, mazeLeftBottom, mazeRight,
             mazeWall1, mazeWall2, mazeWall3, mazeWall4, mazeWall5,
@@ -226,18 +210,129 @@ class GameLevel2 {
     }
 
     // =========================================================================
+    // VICTORY SCREEN
+    // =========================================================================
+    static _showVictoryScreen(gameEnv) {
+        if (document.getElementById('level2-victory-overlay')) return;
+
+        if (!document.getElementById('level2-victory-styles')) {
+            const style = document.createElement('style');
+            style.id = 'level2-victory-styles';
+            style.textContent = `
+                @keyframes l2-win-fadein {
+                    from { opacity: 0; transform: scale(0.96); }
+                    to   { opacity: 1; transform: scale(1); }
+                }
+                @keyframes l2-win-pulse {
+                    0%, 100% { box-shadow: 0 0 24px rgba(0,120,255,0.4), inset 0 0 24px rgba(0,60,180,0.08); }
+                    50%      { box-shadow: 0 0 52px rgba(0,160,255,0.7), inset 0 0 40px rgba(0,80,220,0.15); }
+                }
+                @keyframes l2-win-beep {
+                    0%, 100% { transform: translateY(0px) rotate(-2deg); }
+                    50%      { transform: translateY(-6px) rotate(2deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        const overlay = document.createElement('div');
+        overlay.id = 'level2-victory-overlay';
+        Object.assign(overlay.style, {
+            position:   'fixed',
+            inset:      '0',
+            background: 'rgba(0, 0, 0, 0.88)',
+            display:    'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex:     '10000',
+            fontFamily: "'Courier New', Courier, monospace",
+        });
+
+        overlay.innerHTML = `
+            <div style="
+                background: linear-gradient(160deg, #00020f 0%, #000c26 60%, #000518 100%);
+                border: 1px solid #0050cc;
+                border-radius: 4px;
+                padding: 52px 56px 44px;
+                max-width: 520px;
+                width: 92%;
+                color: #a8d4ff;
+                text-align: center;
+                animation: l2-win-fadein 0.5s ease forwards, l2-win-pulse 3s ease-in-out infinite;
+                position: relative;
+                overflow: hidden;
+            ">
+                <div style="position:absolute;top:10px;left:10px;width:18px;height:18px;border-top:2px solid #0080ff;border-left:2px solid #0080ff;"></div>
+                <div style="position:absolute;top:10px;right:10px;width:18px;height:18px;border-top:2px solid #0080ff;border-right:2px solid #0080ff;"></div>
+                <div style="position:absolute;bottom:10px;left:10px;width:18px;height:18px;border-bottom:2px solid #0080ff;border-left:2px solid #0080ff;"></div>
+                <div style="position:absolute;bottom:10px;right:10px;width:18px;height:18px;border-bottom:2px solid #0080ff;border-right:2px solid #0080ff;"></div>
+
+                <div style="
+                    font-size: 64px;
+                    animation: l2-win-beep 1.6s ease-in-out infinite;
+                    margin-bottom: 8px;
+                    line-height: 1;
+                ">🤖</div>
+
+                <div style="
+                    font-size: 11px; letter-spacing: 6px; color: #0070dd;
+                    text-transform: uppercase; margin-bottom: 10px;
+                ">◈ SECTOR TWO — CLEARED ◈</div>
+
+                <h1 style="
+                    font-size: 2rem; color: #1a90ff; margin: 0 0 6px;
+                    letter-spacing: 3px; text-transform: uppercase;
+                    text-shadow: 0 0 28px rgba(0,140,255,0.65);
+                ">MAZE COMPLETE!</h1>
+
+                <p style="
+                    font-size: 0.95rem; line-height: 1.8;
+                    color: #89bcee; margin: 18px 0 10px;
+                ">
+                    <strong style="color:#4db8ff;">R2-D2</strong> beeps excitedly:<br>
+                    <em style="color:#a8d4ff;">"bwEEP bwoop — ✔ Navigator confirmed.<br>
+                    Sector Three is locked and loaded. Move out!"</em>
+                </p>
+
+                <p style="font-size: 0.85rem; color: #004499; letter-spacing: 2px; margin: 0 0 32px; text-transform: uppercase;">
+                    Advancing to Level 3…
+                </p>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        // Stop barrier glow since we're leaving
+        // (instance not reachable here, but the interval clears on destroy())
+
+        setTimeout(() => {
+            if (gameEnv && gameEnv.gameControl && !gameEnv.gameLevelTransitionTriggered) {
+                gameEnv.gameLevelTransitionTriggered = true;
+                if (gameEnv.gameControl.currentLevel) {
+                    gameEnv.gameControl.currentLevel.continue = false;
+                }
+            }
+        }, 3200);
+
+        setTimeout(() => {
+            overlay.style.transition = 'opacity 0.5s ease';
+            overlay.style.opacity = '0';
+        }, 2800);
+    }
+
+    // =========================================================================
     // PASSIVE BARRIER GLOW — pulses every 4 seconds
     // =========================================================================
     _startBarrierGlow() {
-        if (this._glowInterval) return;             // already running
+        if (this._glowInterval) return;
 
         const pulse = () => {
             const canvas = document.querySelector('canvas');
             _pulseAllBarriers(this._barrierDataList, canvas);
         };
 
-        pulse();                                     // fire immediately on start
-        this._glowInterval = setInterval(pulse, 4000); // then every 4 s
+        pulse();
+        this._glowInterval = setInterval(pulse, 4000);
     }
 
     _stopBarrierGlow() {
@@ -245,14 +340,13 @@ class GameLevel2 {
             clearInterval(this._glowInterval);
             this._glowInterval = null;
         }
-        // Remove any lingering glow divs
         this._barrierDataList?.forEach(data => {
             document.getElementById('barrier-glow-' + (data.id || 'unknown'))?.remove();
         });
     }
 
     // =========================================================================
-    // STARTUP POPUP — matches GameLevelHome style
+    // STARTUP POPUP
     // =========================================================================
     _showStartupPopup() {
         const renderPopup = () => {
@@ -433,7 +527,7 @@ class GameLevel2 {
                     setTimeout(() => {
                         overlay.remove();
                         GameLevel2._startTime = Date.now();
-                        this._startBarrierGlow();   // begin pulsing once the player starts
+                        this._startBarrierGlow();
                     }, 420);
                 });
             }
@@ -467,13 +561,11 @@ class GameLevel2 {
         if (this.gameEnv && this.gameEnv.gameControl) {
             this.gameEnv.gameLevelTransitionTriggered = false;
         }
-        // Start glow in case the popup was already dismissed (e.g. hot-reload)
         if (GameLevel2._startTime) {
             this._startBarrierGlow();
         }
     }
 
-    // Called by the game engine when leaving this level
     destroy() {
         this._stopBarrierGlow();
     }
