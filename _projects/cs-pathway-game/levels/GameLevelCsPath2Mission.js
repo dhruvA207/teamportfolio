@@ -89,7 +89,7 @@ class GameLevelCsPath2Mission extends GameLevelCsPathIdentity {
     const PLAYER_SCALE_FACTOR = 5;
     const player_data = {
       id: 'Minimalist_Identity',
-      greeting: "Hi I am a new adventurer on the CS pathway!",
+      greeting: "Hi, I am a new adventurer on the CS pathway!",
       src: player_src,
       SCALE_FACTOR: PLAYER_SCALE_FACTOR,
       STEP_FACTOR: 1000,

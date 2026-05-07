@@ -131,7 +131,7 @@ class GameLevelCsPath0Forge {
     const PLAYER_SCALE_FACTOR = 5;
     const player_data = {
       id: 'Minimalist_Identity',
-      greeting: "Hi I am a new adventurer on the CSSE pathway!",
+      greeting: "Hi, I am a new adventurer on the CSSE pathway!",
       src: player_src,
       SCALE_FACTOR: PLAYER_SCALE_FACTOR,
       STEP_FACTOR: 1000,
