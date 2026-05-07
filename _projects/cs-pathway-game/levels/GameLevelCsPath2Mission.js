@@ -69,9 +69,9 @@ class GameLevelCsPath2Mission extends GameLevelCsPathIdentity {
     // ── Background ──────────────────────────────────────────────
     const image_src = path + "/images/projects/cs-pathway-game/bg2/mission-tools-fantasy.png";
     const bg_data = {
-        name: GameLevelCsPath2Mission.displayName,
-        greeting: "Welcome to the CS pathway! This quest will prepare you for your mission ahead by introducing your essential tools and resources!",
-        src: image_src,
+      name: GameLevelCsPath2Mission.displayName,
+      greeting: "Welcome to the CS pathway! This quest will prepare you for your mission ahead by introducing your essential tools and resources!",
+      src: image_src,
     };
 
     this.restoreIdentitySelections({

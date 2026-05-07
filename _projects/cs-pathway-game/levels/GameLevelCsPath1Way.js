@@ -26,9 +26,9 @@ class GameLevelCsPath1Way extends GameLevelCsPathIdentity {
     // ── Background ──────────────────────────────────────────────
     const image_src = path + "/images/projects/cs-pathway-game/bg1/wayfinding-world-fantasy.png";
     const bg_data = {
-        name: GameLevelCsPath1Way.displayName,
-        greeting: "Welcome to the CSSE pathway! This quest will establish your bearings in the Wayfinding World, where you'll discover your course, uncover your strengths, and enrich your persona!",
-        src: image_src,
+      name: GameLevelCsPath1Way.displayName,
+      greeting: "Welcome to the CSSE pathway! This quest will establish your bearings in the Wayfinding World, where you'll discover your course, uncover your strengths, and enrich your persona!",
+      src: image_src,
     };
 
     this.restoreIdentitySelections({
