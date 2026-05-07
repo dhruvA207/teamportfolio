@@ -19,7 +19,7 @@
  *   
  *   constructor(gameEnv) {
  *     this.profileManager = new ProfileManager();
- *     await this.profileManager.initialize(); // Note: now async!
+ *     await this.profileManager.initialize();
  *     const state = this.profileManager.getRestoredState();
  *     // Apply state to your game...
  *   }
